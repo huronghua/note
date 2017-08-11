@@ -1,0 +1,99 @@
+1.
+<select id="findActiveBlogLike"
+     resultType="Blog">
+  SELECT * FROM BLOG WHERE state = ‘ACTIVE’ 
+  <if test="title != null">
+    AND title like #{title}
+  </if>
+  <if test="author != null and author.name != null">
+    AND author_name like #{author.name}
+  </if>
+</select>   
+if来执行判断并决定是否需要附加包含的sql，属性值为传入的参数而不是表字段，若传入的
+是对象，以object.property的形式实现
+
+2.
+<select id="findActiveBlogLike"
+     resultType="Blog">
+  SELECT * FROM BLOG WHERE state = ‘ACTIVE’
+  <choose>
+    <when test="title != null">
+      AND title like #{title}
+    </when>
+    <when test="author != null and author.name != null">
+      AND author_name like #{author.name}
+    </when>
+    <otherwise>
+      AND featured = 1
+    </otherwise>
+  </choose>
+</select>
+choose用于判断包含哪一个附加的sql，都不符合就执行otherwise，功能相当于switch，
+区别于if的是只能附加一段sql
+
+3.
+<select id="findActiveBlogLike"
+     resultType="Blog">
+  SELECT * FROM BLOG 
+  <where> 
+    <if test="state != null">
+         state = #{state}
+    </if> 
+    <if test="title != null">
+        AND title like #{title}
+    </if>
+    <if test="author != null and author.name != null">
+        AND author_name like #{author.name}
+    </if>
+  </where>
+</select>
+<where>标签可以排除那种sql中只含有where 和and 而其后sql语句没有匹配上导致sql执行错误
+的情况，并且做自动处理。
+
+4.
+<update id="updateAuthorIfNecessary">
+  update Author
+    <set>
+      <if test="username != null">username=#{username},</if>
+      <if test="password != null">password=#{password},</if>
+      <if test="email != null">email=#{email},</if>
+      <if test="bio != null">bio=#{bio}</if>
+    </set>
+  where id=#{id}
+</update>
+set标签也会动态的设置赋值，如果没有一个条件匹配，他会自动取消sql关键字set
+
+5.
+<trim prefix="SET" suffixOverrides=",">
+  ...
+</trim>
+trim属于自定义标签，标签会前置prefix里面的关键字，而如果没有一条匹配就会删除suffixoverrides里面的关键字达到动态生成的目的
+
+6.
+<select id="selectPostIn" resultType="domain.blog.Post">
+  SELECT *
+  FROM POST P
+  WHERE ID in
+  <foreach item="item" index="index" collection="list"
+      open="(" separator="," close=")">
+        #{item}
+  </foreach>
+</select>
+你可以将任何可迭代对象（如列表、集合等）和任何的字典或者数组对象传递给foreach作为集合参数。当使用可迭代对象或者数组时，
+index是当前迭代的次数，item的值是本次迭代获取的元素。当使用字典（或者Map.Entry对象的集合）
+时，index是键，item是值。
+
+
+7.数据库mapper层的resultMap往往只是映射单条记录可以使用对象或者map等任意类型接收（包括String），查询出的多条记录在外面用List进行包装
+
+8.Dao层@Param注解在含有两个以上参数的时候必须要加，并且默认的Value值需要和xml里面#{}的值对应
+
+9.mybatis中insert可以返回插入成功的记录数和插入记录的主键值，mapper接口返回值依然是成功插入的记录数，但不同的是主键值已经赋值到领域模型实体的id中了。
+
+10.mybatis中传入Map类型的参数，使用时直接取map中put进去的key来传入map中的value值
+
+11.#{}中的值自带单引号，适合于SQL语句中的字段对应的值。${}中的值不带单引号，适合于SQL语句中的字段名。
+
+12.mybatis的generator  columnoveride和columnRenamingRule用于对自动生成的
+
+13.mybatis数据库对应时间类型有timestamp datetime都是时间戳的格式，是一个具体到秒的大整数，date类型才是真正的日期。

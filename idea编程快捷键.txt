@@ -1,0 +1,11 @@
+ctrl+p 参数提示
+alt+enter 自动修正错误
+alt+? 方法提示
+alt+insert 呼出自动生成菜单
+ctrl+alt+o 自动删除无用import
+ctrl+alt+t 自动生成环绕方法
+ctrl+j 自动生成打印循环等方法
+ctrl+shift+上下方向键调换代码行数顺序
+ctrl+shift+左右方向键定位到上一次光标所在位置
+ctrl+alt+enter 在光标行上一行插入一行
+
