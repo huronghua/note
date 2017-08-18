@@ -1,0 +1,79 @@
+SELECT
+	CASE
+WHEN g.`name` IS NULL THEN
+	c.`name`
+ELSE
+	g.`name`
+END AS '渠道',
+ CASE
+WHEN g.`name` IS NULL THEN
+	NULL
+ELSE
+	c.`name`
+END AS '二级渠道',
+ d.`name` AS '品类',
+ CONCAT(e.`name`, '/', i.`name`) AS '目的地',
+ count(DISTINCT a.id) AS '订单总数',
+ count(f.id) AS '出行人数',
+ count(f.id) / count(DISTINCT a.id) AS '单均人数',
+ SUM(a.price_jiesuan) AS '销售额',
+ concat(
+	LEFT (
+		SUM(a.price_jiesuan) / h.total * 100,
+		6
+	),
+	'%'
+) AS '销售占比',
+ SUM(
+	a.actual_price_jiesuan - a.offline_estimate_cost
+) AS '预估利润',
+ concat(
+	LEFT (
+		SUM(
+			(
+				a.actual_price_jiesuan - a.offline_estimate_cost
+			)
+		) / SUM(a.price_jiesuan) * 100,
+		6
+	),
+	'%'
+) AS '毛利率'
+FROM
+	`order` a
+LEFT JOIN order_customize b ON a.id = b.order_id
+LEFT JOIN order_platform c ON b.order_platform_id = c.id
+LEFT JOIN order_platform g ON g.id = c.parent_platform_id
+LEFT JOIN product_order_tag d ON b.order_product_type_id = d.id
+LEFT JOIN district_1 e ON a.destination_d1 = e.id
+LEFT JOIN district_2 i ON a.destination_d2 = i.id
+LEFT JOIN order_tourist f ON f.order_id = a.id
+LEFT JOIN (
+	SELECT
+		SUM(a.price_jiesuan) AS total
+	FROM
+		`order` a
+	LEFT JOIN order_customize b ON a.id = b.order_id
+	LEFT JOIN order_platform c ON b.order_platform_id = c.id
+	LEFT JOIN order_platform g ON g.id = c.parent_platform_id
+	LEFT JOIN product_order_tag d ON b.order_product_type_id = d.id
+	LEFT JOIN district_1 e ON a.destination_d1 = e.id
+	LEFT JOIN district_2 i ON a.destination_d2 = i.id
+	LEFT JOIN order_tourist f ON f.order_id = a.id
+	WHERE
+		a.sign_time BETWEEN DATE_SUB(
+			'2016-10-05',
+			INTERVAL 1 MONTH
+		)
+	AND '2016-10-05'
+) AS h ON 1 = 1
+WHERE
+	a.sign_time BETWEEN DATE_SUB(
+		'2016-10-05',
+		INTERVAL 1 MONTH
+	)
+AND '2016-10-05'
+GROUP BY
+	c.`name`,
+	d.`name`,
+	e.`name`,
+	i.`name`
