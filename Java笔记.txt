@@ -5,3 +5,16 @@
 2.  java不知道调用getset方法获取对象的某一具体属性时，可以利用反射遍历，或者通过传入属性名的方式获取属性值。
 
 3.  判断List中是否含有某一个元素时可以使用contains方法，不包含时在判断前面加个！运算符O(∩_∩)O哈哈~
+
+4.  去除/保留重复元素可以使用HashSet（底层其实是实现了HashMap）数据结构，新建一个用于存储数据的对象，并重写equals和hashcode方法
+
+5.  java涉及list.size方法需要考虑数组越界的问题（前面越界，后面越界），并且需要判断该list是否为空（list！=null&&list.size（）>0），list！=null要放在前面
+
+6.  java中判空的方法把null放在前面，null==。。。或者"str".equals(object)将字符串常量放在前面调用.equals方法,CollectionUtil.isEmpty方法
+
+7.  对于某些从泛型（比如：Map<K, V>）中继承过来的数据，K可能是String、Integer、等等。如果需要map.get(key)，得先确保key的
+	类型跟map的K匹配。否则不报错但是会获取不到值，原则上跟mybatis查询出来的结果的对应属性的类型一样，可以用getclass（）方法获取。
+	
+8.  list = new ArrayList<>;这样list就存在了不是null；list里面却是null，即什么元素都没有	  isEmpty和.size一样都是判断元素个数，前提是要先有list，map也是一样的情况。、
+	当往list中add一个空对象的时候尽管对象为null但是不为null的list里面还是有一个元素null，list.size（）返回1，list.isEmpty（）返回false；
+	
