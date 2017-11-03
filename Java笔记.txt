@@ -18,3 +18,5 @@
 8.  list = new ArrayList<>;这样list就存在了不是null；list里面却是null，即什么元素都没有	  isEmpty和.size一样都是判断元素个数，前提是要先有list，map也是一样的情况。、
 	当往list中add一个空对象的时候尽管对象为null但是不为null的list里面还是有一个元素null，list.size（）返回1，list.isEmpty（）返回false；
 	
+9.  java每编写一个方法，都要考虑到业务逻辑范围内的空指针以及各种异常的情况
+	

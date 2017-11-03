@@ -1,0 +1,13 @@
+﻿jquery的attr只能对checkbox实行一次全选，想实行多次应该使用prop("checked",true)
+
+采用ajax渲染的方式，jquery的click事件会失效，因为ajax异步执行，可能元素还没有渲染出来，click事件找不到dom元素。
+
+function方法里面的点击事件再嵌套使用jquery的点击事件。
+
+提交按钮的阻止提交动作，需要添加onclick函数并且在函数中return true或false 例如：onclick="return prevent()"
+
+ajax提交的事件刷新的页面有可能导致click事件不生效，需要在动态渲染的时候为dom元素添加onclick事件来解决。
+
+ifram指定name form指定target属性对应iframe的name属性  在controller中返回页面的时候只返回需要刷新的页面就会在提交form表单的页面
+局部刷新form中target对应的页面而页面其余的部分就不会刷新。
+iframe嵌入的部分页面元素没法与外部元素共享，必须在父级获取使用$(window.parent.document).find（"#id"）.val()

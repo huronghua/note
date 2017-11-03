@@ -1,4 +1,4 @@
-SELECT
+﻿SELECT
 	CASE
 WHEN g.`name` IS NULL THEN
 	c.`name`
@@ -77,3 +77,163 @@ GROUP BY
 	d.`name`,
 	e.`name`,
 	i.`name`
+
+
+
+
+
+
+SELECT
+	e.`name` AS 'order_platform',
+	CONCAT('YQH', b.order_id + 200) AS order_id,
+	a.channel_order_id,
+	DATE_FORMAT(a.sign_time, '%Y-%m-%d') AS sign_time,
+	b.date,
+	DATE_ADD(
+		b.date,
+		INTERVAL (b.days - 1) DAY
+	) AS 'back_date',
+	CASE
+WHEN a.`status` = 1 THEN
+	'未付款'
+WHEN a.`status` = 2 THEN
+	'部分付款'
+WHEN a.`status` = 3 THEN
+	'已付款'
+WHEN a.`status` = 4 THEN
+	'出行中'
+WHEN a.`status` = 5 THEN
+	'已完成'
+WHEN a.`status` = 6 THEN
+	'已取消'
+ELSE
+	''
+END AS 'order_status',
+ d.`name` AS 'type',
+ g.`name` AS 'destination',
+ CASE c.yingshou_status
+WHEN 1 THEN
+	'未收款'
+WHEN 2 THEN
+	'部分收款'
+WHEN 3 THEN
+	'已收款'
+WHEN 4 THEN
+	'多收款'
+ELSE
+	''
+END AS 'yingshou_status',
+	a.current_sales AS 'yingshou_price',
+ (IFNULL(n.receive_price,0) - IFNULL(k.pay_price,0)) AS 'receivable_price',
+ l.money AS 'diff_price',
+ l.reason AS 'diff_reason',
+ n.collection_account AS 'collection_account',
+ m.invoiced_price AS 'invoiced_price',
+ m.title,
+ (
+	CASE
+	WHEN m.`invoice_obj` = 1 THEN
+		'个人'
+	WHEN m.`invoice_obj` = 2 THEN
+		'渠道'
+	ELSE
+		''
+	END
+) AS 'invoice_object',
+ m.invoice_number,
+ n.financial_proof AS 'financial_proof'
+FROM
+	(
+		SELECT
+			*
+		FROM
+			`order`
+		WHERE
+			delete_flag = 0
+	) a
+LEFT JOIN order_customize b ON a.id = b.order_id
+LEFT JOIN caiwu_yingshou c ON a.id = c.order_id
+LEFT JOIN (
+	SELECT
+		*
+	FROM
+		product_order_tag
+	WHERE
+		delete_flag = 0
+) d ON b.order_product_type_id = d.id
+LEFT JOIN (
+	SELECT
+		*
+	FROM
+		order_platform
+	WHERE
+		delete_flag = 0
+) e ON b.order_platform_id = e.id
+LEFT JOIN (
+	SELECT
+		f.reference_id,
+		-SUM(IFNULL(f.change_money,0)) AS 'receive_price',
+		GROUP_CONCAT(j.`name`) AS 'collection_account',
+		GROUP_CONCAT(f.financial_proof) AS 'financial_proof'
+	FROM
+		(
+			SELECT
+				*
+			FROM
+				balance_change_history
+			WHERE
+				type = 3
+			AND delete_flag = 0
+		) f
+	LEFT JOIN collection_account j ON j.id = f.collection_account_id
+	GROUP BY
+		f.reference_id
+) n ON n.reference_id = a.id
+LEFT JOIN (
+	SELECT
+		f.reference_id,
+		SUM(IFNULL(f.change_money,0)) AS 'pay_price',
+		GROUP_CONCAT(j.`name`) AS 'collection_account',
+		GROUP_CONCAT(f.financial_proof) AS 'financial_proof'
+	FROM
+		(
+			SELECT
+				*
+			FROM
+				balance_change_history
+			WHERE
+				type = 4 
+			AND delete_flag = 0
+		) f
+	LEFT JOIN collection_account j ON j.id = f.collection_account_id
+	GROUP BY
+		f.reference_id
+) k ON k.reference_id = a.id
+LEFT JOIN (
+	SELECT
+		bm_order_id,
+		SUM(IFNULL(money,0)) AS 'diff_money_total',
+		GROUP_CONCAT(money) AS 'money',
+		GROUP_CONCAT(reason) AS 'reason'
+	FROM
+		finance_receivable_diff
+	WHERE
+		delete_flag = 0
+	GROUP BY
+		bm_order_id
+) l ON l.bm_order_id = a.id
+LEFT JOIN (
+	SELECT
+		bm_order_id,
+		SUM(IFNULL(money,0)) AS 'invoiced_price',
+		GROUP_CONCAT(title) AS 'title',
+		GROUP_CONCAT(invoice_obj) AS 'invoice_obj',
+		GROUP_CONCAT(invoice_number) AS 'invoice_number'
+	FROM
+		finance_receivable_invoice
+	WHERE
+		delete_flag = 0
+	GROUP BY
+		bm_order_id
+) m ON m.bm_order_id = a.id
+需要关联表的sql可以先将需要关联的表中需要的字段筛选出来挂载在关联的表下面 需要group by时可按照原本的表关联的的条件分组这样可以保证一对一。
