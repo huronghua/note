@@ -10,4 +10,7 @@ ajax提交的事件刷新的页面有可能导致click事件不生效，需要�
 
 ifram指定name form指定target属性对应iframe的name属性  在controller中返回页面的时候只返回需要刷新的页面就会在提交form表单的页面
 局部刷新form中target对应的页面而页面其余的部分就不会刷新。
+
 iframe嵌入的部分页面元素没法与外部元素共享，必须在父级获取使用$(window.parent.document).find（"#id"）.val()
+
+ajax提交登录过期报错进入不了后台，判断状态利用window.location.href=‘’跳转到登录页，这种跳转是直接在浏览器地址栏发起请求，不同于httpclient发出的请求

@@ -1,4 +1,4 @@
-1.
+﻿1.
 <select id="findActiveBlogLike"
      resultType="Blog">
   SELECT * FROM BLOG WHERE state = ‘ACTIVE’ 
@@ -89,6 +89,7 @@ index是当前迭代的次数，item的值是本次迭代获取的元素。当�
 8.Dao层@Param注解在含有两个以上参数的时候必须要加，并且默认的Value值需要和xml里面#{}的值对应
 
 9.mybatis中insert可以返回插入成功的记录数和插入记录的主键值，mapper接口返回值依然是成功插入的记录数，但不同的是主键值已经赋值到领域模型实体的id中了。
+并且批量插入或者批量更新的时候，可以批量带出自增主键的数组，useGeneratedKeys="true" keyProperty="messageId"，keyProperty的值为传入对象的对应数据库主键的属性值（返回自增主键ID到对象数组的该属性上）
 
 10.mybatis中传入Map类型的参数，使用时直接取map中put进去的key来传入map中的value值
 

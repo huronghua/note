@@ -1,4 +1,4 @@
-1.
+﻿1.
 Springboot
 
 @PathVariable  用于获取请求url中的参数，把URI template 中变量 ownerId的值和petId的值，
@@ -51,3 +51,9 @@ List<User> findAll();
 
 5.Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd").serializeNulls().create();
 gson转对象为json时默认转换时间格式为yyyy-MM-dd HH:mm:ss可以通过setDateFormat设置转换格式，通过serializeNulls保留value值为空的key
+
+6.@Autowired注解在注入Bean的时候，必须在之前所有调用的地方都使用@Autowired注解注入，而不能使用new的方式，采用new的方式，下层调用单
+注入的Bean会为null，所以在上层就应该用@Autowired注解注入调用的父级类，否则之后的注入都会失败
+
+7.(OAuth2Authentication)SecurityContextHolder.getContext().getAuthentication()能够获取进行了认证的用户信息
+  (OAuth2AuthenticationDetails) oAuth2Authentication.getDetails();能够进一步拿到认证所有的信息细节（包括token，用户名，过期时间之类）

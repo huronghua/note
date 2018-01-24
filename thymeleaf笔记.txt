@@ -1,0 +1,6 @@
+(if)?(then):(else)三目运算符用于对结果进行处理
+#strings、#lists、#maps、等各种内置对象提供很多处理各种类型数据的便捷方法
+#conversions内置对象用于对各种数据类型进行数据转换
+各种对象的isEmpty()方法用于判断其是否为空
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">添加这个标签可以使idea识别thymeleaf基本语法并且提供内置的方法
