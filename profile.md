@@ -13,8 +13,18 @@
 - 工作年限：2年
 - Github：http://github.com/huronghua
 - 期望职位：Java开发工程师
-- 期望薪资：税前月薪15k
+- 期望薪资：税前月薪14k
 - 期望城市：上海、杭州
+
+# 技能清单
+
+以下为我熟悉的技能
+
+- Web开发：jquery/ajax/websocket
+- 框架、模板引擎：springboot/mybatis/spring security/thymeleaf/velocity/ionic
+- 数据库相关：mySQL/redis
+- 版本管理、文档和自动化部署工具：git/svn/markdown/maven/jenkins
+- 单元测试：junit
 
 # 工作经历
 
@@ -57,17 +67,6 @@
 2.使用Jquery、Ajax等技术实现前端网页元素的生成，生成文件的文件的上传）
 
 3.后期系统的维护，保证系统稳定运行。 
-
-
-# 技能清单
-
-以下为我熟悉的技能
-
-- Web开发：jquery/ajax/websocket
-- 框架、模板引擎：springboot/mybatis/spring security/thymeleaf/velocity/ionic
-- 数据库相关：mySQL/redis
-- 版本管理、文档和自动化部署工具：git/svn/markdown/maven/jenkins
-- 单元测试：junit
 
 # 自我评价
 主攻后端，目前以夯实基础为主，了解一些设计模式，喜欢多线程、高并发，jvm方向希望有机会可以从事相关的工作。
