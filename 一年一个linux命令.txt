@@ -1,0 +1,25 @@
+du -ah --max-depth=1 指定当前目录下指定深度的文件夹的占用磁盘情况
+free -m查看服务器当前内存的使用状况
+ps -ef|grep word查看名字为word的进程
+netstat -anp|grep  pid 查看指定端口号的进程名
+sh script.sh 启动指定脚本
+wget 网络下载
+uptime 系统负载
+history 历史输入命令1000条
+telnet 用于查看服务器是否可以访问
+tar 解压/压缩
+unzip/zip 压缩解压
+cat 查看纯文本文件
+less 查看较大的文件
+head/tail 从头/尾开始查看文件
+rm -rf 删除目录
+vim 编辑文件
+grep 匹配文件
+find 查找软件目录
+ln 创建快捷方式
+ps aux|grep word 匹配word的进程
+> 追加文件
+alias 别名
+top 查看占用较多资源的进程
+pid of word 查看word的端口
+/etc/.init.d/目录 start 创建软链接到指定目录

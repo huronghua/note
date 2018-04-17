@@ -1,0 +1,145 @@
+1.volatile关键字保证可见性之外还可以避免编译器进行指令重排，加Syncronized锁可以保证原子性和可见性还可以避免指令重排。final关键字一定程度上可以保证线程安全，并且可以保证线程可见性。
+2.静态变量是在类初始化阶段初始化的，整个过程是加锁的。（延迟初始化可以使用这种方法。） public static Object getInstance（）{....}
+3.java本地方法栈保存执行本地方法时需要的数据（一般是本地方法接口，本地方法库，类库）
+4.写入时保证从缓存中刷新到主内存中，读取时保证缓存中没有过期的值，从内存中读取。java内存模型描述了多线程代码中哪些行为是正确的以及多线程之间如何通信，代码中的读写行为如何反映到内存，cpu缓存等底层细节。
+5.内存屏障可以保证数据的可见性（写入屏障刷出屏障位置之前进行的所有写入cache中的数据）和防止指令重排（插入一个memory barrier告诉编译器这段指令不能重排序）
+
+java枚举？
+每个枚举类型都有一个实例,每个实例都有枚举类定义的方法和变量,values()方法的作用就是获取枚举类中的所有变量，并作为数组返回，而valueOf(String name)方法与Enum类中的valueOf方法的作用类似根据名称获取枚举变量。switch支持枚举类型，1.7以后也支持字符串类型，枚举的单例可以避免序列化破坏单例的全局唯一性。
+
+
+java并发
+3.Java的信号灯？
+semaphore相当于一个资源池，acquire（）获得许可，release（）释放许可，没有资源时acquire线程会阻塞，直到有值，并且可以设置线程之间竞争信号量的模式为是否采用公平模式，公平模式就按照到达顺序执行，非公平则后续的请求可能排在队列头部。
+
+6、CAS？CAS 有什么缺陷，如何解决？
+CAS的思想很简单：三个参数，一个当前内存值V、旧的预期值A、即将更新的值B，当且仅当预期值A和内存值V相同时，将内存值修改为B并返回true，否则什么都不做，并返回false。当前内存中的值通过
+volatile关键字修饰，从而一旦有线程修改了v的值来使别的线程都能看见，从而跟自己维护的旧的预期值进行比较，使用lock指令通过内存屏障效果保证了volatile的防止指令重排和数据可见性从而保证了线程安全的修改变量值。
+缺陷：1.在竞争很大的系统中，预期值和内存值很大可能是不同的，所以要不断地失败不断地重新尝试，但是性能还是优于使用锁机制的性能
+	  2.如果变量V初次读取的时候是A，并且在准备赋值的时候检查到它仍然是A，并不能说明它的值没有被其他线程修改过，可以通过给变量一个版本号标识符来标记变量  atomicstampedreference
+
+
+11.AQS
+它维护了一个volatile int state（代表共享资源）和一个FIFO线程等待队列（多线程争用资源被阻塞时会进入此队列）
+public abstract class AbstractQueuedSynchronizer
+    extends AbstractOwnableSynchronizer
+    implements java.io.Serializable {
+    static final class Node {...}
+    private transient volatile Node head;
+    private transient volatile Node tail;
+    private volatile int state;//同步状态
+}
+
+static final class Node {
+    //该等待同步的节点处于共享模式
+    static final Node SHARED = new Node();
+    //该等待同步的节点处于独占模式
+    static final Node EXCLUSIVE = null;
+
+    //等待状态,这个和state是不一样的:有1,0,-1,-2,-3五个值
+    volatile int waitStatus;
+    static final int CANCELLED =  1;
+    static final int SIGNAL    = -1;
+    static final int CONDITION = -2;
+    static final int PROPAGATE = -3;
+
+    volatile Node prev;//前驱节点
+    volatile Node next;//后继节点
+    volatile Thread thread;//等待锁的线程
+    //和节点是否共享有关
+    Node nextWaiter;
+    //Returns true if node is waiting in shared mode
+    final boolean isShared() {
+            return nextWaiter == SHARED;
+        }
+}
+acquire关键方法分析：
+调用自定义同步器的tryAcquire()尝试直接去获取资源，如果成功则直接返回；
+没成功，则addWaiter()将该线程加入等待队列的尾部，并标记为独占模式；
+enq(Node)此方法用于将node加入队尾
+acquireQueued()使线程在等待队列中休息，有机会时（轮到自己，会被unpark()）会去尝试获取资源。获取到资源后才返回。如果在整个等待过程中被中断过，则返回true，否则返回false。
+如果线程在等待过程中被中断过，它是不响应的。只是获取资源后才再进行自我中断selfInterrupt()，将中断补上。
+https://images2015.cnblogs.com/blog/721070/201511/721070-20151102145743461-623794326.png
+
+
+18.ThreadLocal原理，用的时候需要注意什么？
+在线程内部维护了一个自己的类似于hashmap的ThreadLocalMap数据结构，用于保存键值对，但是只能保存一个，并且键就是ThreadLocal自己
+容易发生内存泄漏，因为key为弱引用，如果线程一直运行，GC就没办法回收Entry对象的value，所以在进行get和set之后都要及时进行remove操作
+
+
+
+Spring部分
+
+8、Spring 是如何管理事务的，事务管理机制？
+编程式事务：1.platformTransactionManager手动在代码中编写  transactionDefinition注入transactionStatus，transactionManager调用rollback（transactionStatus）
+			2.transactionTemplate 使用对应的两个callback接口在补获的checkedException异常中抛出runtime异常或者使用transactionStatus设置rollbackonly标志
+			
+声明式事务：xml配置、注解配置
+
+
+数据库
+1.mysql分页有什么优化？
+普通的limit写法数据量越大查询效率越慢，因为需要逐行扫描出M+N条记录再取出N条，总结经验就是尽可能用索引去查询出需要查询的那些记录成临时表再进行关联查询。
+不显示总页数，只显示上一页下一页，通过查询该页的数据时多查一条记录但只取该页的数据来判断是否有下一页，没有就置灰。
+获取总数优化：根据业务维度（时间维度或者用户维度）分库分表，否则尽量不要去获取记录的总条数。
+获取数据的优化：先查询翻页中需要的N条数据的主键id，然后根据主键id去查询你所需要的N条数据，此过程中查询N条数据的主键ID在索引中完成。
+				select * from order_info,(select order_id from order_info where channels_id=35 order by order_id desc limit 1320000,20) order_info_tmp where order_info.order_id = order_info_tmp.order_id
+2.乐观锁悲观锁？
+悲观锁：就是很悲观，每次去拿数据的时候都认为别人会修改，所以每次在拿数据的时候都会上锁。
+		 (1)对任何记录进行修改前，先尝试为该记录加排它锁，加锁失败说明有其余事务正在进行修改需要等到该事务提交释放锁，成功就可以进行修改，修改成功后释放锁。
+		 (2)关闭自动提交属性  setautocommit = 0; 通过select ... from table for update加锁   行级索是基于索引的，如果sql语句用不到索引就会进行整表锁定需要注意。
+		 (3)优点是数据安全一致性提供了保证，但是加锁使得效率很低而且还有可能产生死锁。
+乐观锁：很乐观，每次去拿数据的时候都认为别人不会修改，所以不会上锁，但是在提交更新的时候会判断一下在此期间别人有没有去更新这个数据。
+		  (1)使用数据版本，给表添加一个version字段，每次更新操作都会对版本号+1，在更新操作时比较之前一次读操作时的version是否一致，一致就说明这期间没有别的事务进行过更新。
+		  (2)使用时间戳，原理同version版本标识符。
+		  (3)优点是效率很高。
+		  乐观锁就在更新的那一瞬间锁了下，悲观锁从准备开始更新操作时就加锁，锁的时间比乐观锁长，所有的update语句都会加锁。
+		  
+4、mysql 的表锁、行锁
+表锁：锁住的是整张表，并发能力差
+行锁：锁住的是有限行的记录，其他行仍可以访问，并发能力好（select是不会加锁的（除了serializable级别），update、delete都会加锁）
+	  在没有索引的行上加锁会导致全表加锁，实际过程中发现被锁的行不满足条件时mysql会及时解锁
+隔离级别：
+未提交读(Read Uncommitted)：允许脏读，也就是可能读取到其他会话中未提交事务修改的数据
+提交读(Read Committed)：只能读取到已经提交的数据。Oracle等多数数据库默认都是该级别 (不重复读)
+可重复读(Repeated Read)：可重复读。在同一个事务内的查询都是事务开始时刻一致的，InnoDB默认级别。在SQL标准中，该隔离级别消除了不可重复读，但是还存在幻象读（事务B修改id=1的数据提交之后，事务A同样的查询，后一次和前一次的结果不一样，这就是不可重读，不可重复读重点在于update和delete，而幻读的重点在于insert）
+串行读(Serializable)：完全串行化的读，每次读都需要获得表级共享锁，读写相互都会阻塞
+如果使用锁机制来实现这两种隔离级别，在可重复读中，该sql第一次读取到数据后，就将这些数据加锁，其它事务无法修改这些数据，就可以实现可重复读了。但这种方法却无法锁住insert的数据，所以当事务A先前读取了数据，或者修改了全部数据，事务B还是可以insert数据提交，这时事务A就会发现莫名其妙多了一条之前没有的数据，这就是幻读，不能通过行锁来避免。需要Serializable隔离级别 ，读用读锁，写用写锁，读锁和写锁互斥，这么做可以有效的避免幻读、不可重复读、脏读等问题，但会极大的降低数据库的并发能力。
+如果使用的是没有索引的字段，比如update class_teacher set teacher_id=7 where class_name='初三八班（即使没有匹配到任何数据）',那么会给全表加入gap锁。同时，它不能像上文中行锁一样经过MySQL Server过滤自动解除不满足条件的锁
+行锁防止别的事务修改或删除，GAP锁防止别的事务新增，行锁和GAP锁结合形成的的Next-Key锁共同解决了RR级别在写数据时的幻读问题。
+
+5、mysql 性能优化
+1.sql查询优化、索引优化
+2.表结构优化、字段类型优化  分库分表  水平拆分  垂直拆分	
+3.使用各种缓存减小DB压力
+
+6、mysql的索引分类：B+，hash；什么情况用什么索引
+1. hash索引查找数据基本上能一次定位数据，当然有大量碰撞的话性能也会下降。而btree索引就得在节点上挨着查找了，很明显在数据精确查找方面hash索引的效率是要高于btree的。
+2. 那么不精确查找呢，也很明显，因为hash算法是基于等值计算的，所以对于“like”等范围查找hash索引无效，不支持，也无法利用索引完成排序。
+3. 对于btree支持的联合索引的最优前缀，hash也是无法支持的，联合索引中的字段要么全用要么全不用。
+
+
+jvm
+
+6、类加载为什么要使用双亲委派模式，有没有什么场景是打破了这个模式？
+防止恶意加载别的类
+双亲委派模型工作过程是：如果一个类加载器收到类加载的请求，它首先不会自己去尝试加载这个类，而是把这个请求委派给父类加载器完成。每个类加载器都是如此，只有当父加载器在自己的搜索范围内找不到指定的类时（即ClassNotFoundException），子加载器才会尝试自己去加载。
+无法通过强制加载自定义的类加载器绕过双亲委派模型，因为在JVM中，判断一个对象是否是某个类型时，如果该对象的实际类型与待比较的类型的类加载器不同，那么会返回false。
+加载流程图:http://upload-images.jianshu.io/upload_images/2154124-d5859f8e79069128?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240
+换句话说，如果自定义类加载器，就必须重写findClass方法！
+defineClass主要的功能是：将一个字节数组转为Class对象，这个字节数组是class文件读取后最终的字节数组
+打破模型还需要重写loadclass方法
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -100,3 +100,5 @@ index是当前迭代的次数，item的值是本次迭代获取的元素。当�
 13.mybatis数据库对应时间类型有timestamp datetime都是时间戳的格式，是一个具体到秒的大整数，date类型才是真正的日期。
 
 14.mybatis配置项returnInstanceForEmptyRow返回全部属性为空的实例，map、object都可以。
+
+15.当需要映射的对象包含另一个对象的List时，通过mybatis的collection标签在resultmap中进行配置，并且id标签的column为查询语句的关联主键字段的别名，property为映射对象的属性名。
