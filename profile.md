@@ -2,7 +2,7 @@
 
 # 联系方式
 
-- 手机：17236122759
+- 手机：17326122759
 - Email：im.hurh@gmail.com
 - 微信号：huronghua6603
 
@@ -13,7 +13,7 @@
 - 工作年限：2年
 - Github：http://github.com/huronghua
 - 期望职位：Java开发工程师
-- 期望薪资：税前月薪14k
+- 期望薪资：税前14k
 - 期望城市：上海、杭州
 
 # 技能清单
