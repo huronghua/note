@@ -20,12 +20,8 @@
 3.如果Servlet没有配置1 ，该Servlet不会在Tomcat启动时初始化，而是在请求到来时初始化。
 4.每次请求， Request都会被初始化，响应请求后，请求被销毁。
 5.Servlet初始化后，将不会随着请求的结束而注销。
-6.关闭Tomcat时，Servlet、Filter依次被注销。
+6.关闭Tomcat等web服务器时，Servlet、Filter依次被注销,如果长时间不使用也会被销毁。
 
-作者：时芥蓝
-链接：https://www.jianshu.com/p/1acdfac2b4e4
-來源：简书
-著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
 9.tcp三次握手四次挥手？
 为什么建立连接是三次握手
 这是因为服务端在LISTEN状态下，收到建立连接请求的SYN报文后，把ACK和SYN放在一个报文里发送给客户端。
