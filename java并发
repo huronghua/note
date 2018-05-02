@@ -1,0 +1,95 @@
+1.synchronized的实现原理以及锁优化？
+jvm基于进入和退出monitor对象来实现方法同步和代码块同步，monitorenter指令插入到同步代码块的开始位置，monitorexit插入到方法结束和异常出，线程执行到monitorenter处是尝试获取对象的所有权，即对象的锁
+
+3.Java的信号灯？
+semaphore相当于一个资源池，acquire（）获得许可，release（）释放许可，没有资源时acquire线程会阻塞，直到有值，并且可以设置线程之间竞争信号量的模式为是否采用公平模式，公平模式就按照到达顺序执行，非公平则后续的请求可能排在队列头部。
+
+4.synchronized 在静态方法和普通方法的区别？
+作用于普通方法：锁作用于对象，两个线程同时调用该对象的一个方法，就会产生互斥，必须等一个线程执行完毕释放锁
+作用于静态方法：锁作用于这个类，不会产生互斥
+对象锁钥匙只能有一把才能互斥，才能保证共享变量的唯一性
+在静态方法上的锁，和 实例方法上的锁，默认不是同样的，如果同步需要制定两把锁一样。
+关于同一个类的方法上的锁，来自于调用该方法的对象，如果调用该方法的对象是相同的，那么锁必然相同，否则就不相同。比如 new A().x() 和 new A().x(),对象不同，锁不同，即不同对象调用相同的方法不会阻塞执行，如果A的单例的，就能互斥。
+静态方法加锁，能和所有其他静态方法加锁的 进行互斥
+静态方法加锁，和xx.class（类锁） 锁效果一样，直接属于类的
+
+6、CAS？CAS 有什么缺陷，如何解决？
+CAS的思想很简单：三个参数，一个当前内存值V、旧的预期值A、即将更新的值B，当且仅当预期值A和内存值V相同时，将内存值修改为B并返回true，否则什么都不做，并返回false。当前内存中的值通过
+volatile关键字修饰，从而一旦有线程修改了v的值来使别的线程都能看见，从而跟自己维护的旧的预期值进行比较，使用lock指令通过内存屏障效果保证了volatile的防止指令重排和数据可见性从而保证了线程安全的修改变量值。
+缺陷：1.在竞争很大的系统中，预期值和内存值很大可能是不同的，所以要不断地失败不断地重新尝试，但是性能还是优于使用锁机制的性能
+	 2.如果变量V初次读取的时候是A，并且在准备赋值的时候检查到它仍然是A，并不能说明它的值没有被其他线程修改过，可以通过给变量一个版本号标识符来标记变量  atomicstampedreference
+	 1.ABA问题  添加版本号（通过AtomicStampedReference类来解决）
+	 2.失败时多次频繁调用   使用pause指令延迟执行
+	 3.只能保证单个共享变量的原子操作   使用锁或者合并为一个共享变量来操作
+
+7、synchronized 和 lock 有什么区别？
+a、start()方法，调用该方法开始执行该线程；b、stop()方法，调用该方法强制结束该线程执行；c、join方法，调用该方法等待该线程结束（有阻塞和非阻塞超时版本）。d、sleep()方法，调用该方法该线程进入等待。e、run()方法，调用该方法直接执行线程的run()方法，但是线程调用start()方法时也会运行run()方法，区别就是一个是由线程调度运行run()方法，一个是直接调用了线程中的run()方法
+
+它维护了一个volatile int state（代表共享资源）和一个FIFO线程等待队列（多线程争用资源被阻塞时会进入此队列）
+public abstract class AbstractQueuedSynchronizer
+    extends AbstractOwnableSynchronizer
+    implements java.io.Serializable {
+    static final class Node {...}
+    private transient volatile Node head;
+    private transient volatile Node tail;
+    private volatile int state;//同步状态
+}
+
+static final class Node {
+    //该等待同步的节点处于共享模式
+    static final Node SHARED = new Node();
+    //该等待同步的节点处于独占模式
+    static final Node EXCLUSIVE = null;
+
+    //等待状态,这个和state是不一样的:有1,0,-1,-2,-3五个值
+    volatile int waitStatus;
+    static final int CANCELLED =  1;
+    static final int SIGNAL    = -1;
+    static final int CONDITION = -2;
+    static final int PROPAGATE = -3;
+
+    volatile Node prev;//前驱节点
+    volatile Node next;//后继节点
+    volatile Thread thread;//等待锁的线程
+    //和节点是否共享有关
+    Node nextWaiter;
+    //Returns true if node is waiting in shared mode
+    final boolean isShared() {
+            return nextWaiter == SHARED;
+        }
+}
+acquire关键方法分析：
+调用自定义同步器的tryAcquire()尝试直接去获取资源，如果成功则直接返回；
+没成功，则addWaiter()将该线程加入等待队列的尾部，并标记为独占模式；
+enq(Node)此方法用于将node加入队尾
+acquireQueued()使线程在等待队列中休息，有机会时（轮到自己，会被unpark()）会去尝试获取资源。获取到资源后才返回。如果在整个等待过程中被中断过，则返回true，否则返回false。
+如果线程在等待过程中被中断过，它是不响应的。只是获取资源后才再进行自我中断selfInterrupt()，将中断补上。
+https://images2015.cnblogs.com/blog/721070/201511/721070-20151102145743461-623794326.png
+
+14、如何保证多线程下 i++ 结果正确？
+使用atomic包下的类的getAndIncrement（）方法（使用的CAS算法） 和LongAdder（）
+synchronized同步
+
+17.线程池如何调优，最大数目如何确认？
+并发实战P139
+
+18.ThreadLocal原理，用的时候需要注意什么？
+在线程内部维护了一个自己的类似于hashmap的ThreadLocalMap数据结构，用于保存键值对，但是只能保存一个，并且键就是ThreadLocal自己
+容易发生内存泄漏，因为key为弱引用，如果线程一直运行，GC就没办法回收Entry对象的value，所以在进行get和set之后都要及时进行remove操作
+
+19.CountDownLatch 和 CyclicBarrier 的用法，以及相互之间的差别?
+countdownlatch可以用于阻塞线程
+semaphore可以用于控制并发数
+
+并发艺术P189
+并发实战P79
+
+区别：艺术P195
+
+20.LockSupport工具
+并发艺术P146
+
+
+21、Condition接口及其实现原理
+并发艺术P147
+

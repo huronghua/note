@@ -1,0 +1,148 @@
+1.volatile关键字保证可见性（MESI）之外还可以避免编译器进行指令重排，加Syncronized锁可以保证原子性和可见性还可以避免指令重排。final关键字一定程度上可以保证线程安全，并且可以保证线程可见性。主要用于标志位变量和双重检测+禁止指令重排
+2.静态变量是在类初始化阶段初始化的，整个过程是加锁的。（延迟初始化可以使用这种方法。）public static instance = new Object(); public static Object getInstance（）{....}
+3.java本地方法栈保存执行本地方法时需要的数据（一般是本地方法接口，本地方法库，类库）
+4.写入时保证从缓存中刷新到主内存中，读取时保证缓存中没有过期的值，从内存中读取。java内存模型描述了多线程代码中哪些行为是正确的以及多线程之间如何通信，代码中的读写行为如何反映到内存，cpu缓存等底层细节。
+5.内存屏障可以保证数据的可见性（对于volatile变量，读操作时JMM会把工作内存中对应的值设为无效，要求线程从主内存中读取数据；写操作时JMM会把工作内存中对应的数据刷新到主内存中，这种情况下，其它线程就可以
+读取变量的最新值。）和防止指令重排（插入一个memory barrier告诉编译器这段指令不能重排序）
+6.什么事线程封闭？
+当个线程内部的每个方法的局部变量虽然是线程不安全的，但是如果只有单个线程使用，则不会有线程安全问题，就好像threadlocal，每个线程使用的时候都会有一个自己的内部副本局部变量不会有安全问题
+7.java枚举？
+每个枚举类型都有一个实例,每个实例都有枚举类定义的方法和变量,values()方法的作用就是获取枚举类中的所有变量，并作为数组返回，而valueOf(String name)方法与Enum类中的valueOf方法的作用类似根据名称获取枚举变量。switch支持枚举类型，1.7以后也支持字符串类型，枚举的单例可以避免序列化破坏单例的全局唯一性。
+
+8.servlet的生命周期？
+创建一个实例并加载
+调用init()方法初始化
+如果有配置listener或filter就执行listener、filter里面的逻辑
+调用service方法doget()等方法完成处理逻辑
+调用destroy()方法进行销毁
+1.Filter在web服务器启动时初始化
+2.如果某个Servlet配置了 1 ，该Servlet也是在Tomcat（Servlet容器）启动时初始化。
+3.如果Servlet没有配置1 ，该Servlet不会在Tomcat启动时初始化，而是在请求到来时初始化。
+4.每次请求， Request都会被初始化，响应请求后，请求被销毁。
+5.Servlet初始化后，将不会随着请求的结束而注销。
+6.关闭Tomcat等web服务器时，Servlet、Filter依次被注销,如果长时间不使用也会被销毁。
+
+9.tcp三次握手四次挥手？
+为什么建立连接是三次握手
+这是因为服务端在LISTEN状态下，收到建立连接请求的SYN报文后，把ACK和SYN放在一个报文里发送给客户端再次对请求连接进行确认。防止了服务器端因为上次延迟到达的连接请求而一直等待时则没有请求连接而浪费资源
+关闭连接却是四次挥手呢
+而关闭连接时，当收到对方的FIN报文时，仅仅表示对方不再发送数据了但是还能接收数据，己方也未必全部数据都发送给对方了，所以己方可以立即close，也可以发送一些数据给对方后，再发送FIN报文给对方来表示同意现在关闭连接，因此，己方ACK和FIN一般都会分开发送。
+10.HTTPS和HTTP 为什么更安全？
+HTTPS和HTTP 为什么更安全，先看这些
+http默认端口是80 https是443
+http是HTTP协议运行在TCP之上。所有传输的内容都是明文，客户端和服务器端都无法验证对方的身份。
+https是HTTP运行在SSL/TLS之上，SSLTLS运行在TCP之上。所有传输的内容都经过加密，加密采用对称加密，但对称加密的密钥用服务器方的证书进行了非对称加密。此外客户端可以验证服务器端的身份，如果配置了客户端验证，服务器方也可以验证客户端的身份。HTTP(应用层) 和TCP(传输层)之间插入一个SSL协议。
+11.一次http请求的过程？
+DNS域名解析 –> 发起TCP的三次握手 –> 建立TCP连接后发起http请求 –> 服务器响应http请求，浏览器得到html代码 –> 浏览器解析html代码，并请求html代码中的资源（如js、css、图片等） –> 浏览器对页面进行渲染呈现给用户。
+
+
+
+
+1.list和set的区别？
+list是有序的set是无需的，list中的元素可以重复，set中的元素不可以重复
+
+
+2.HashSet是如何保证不重复的？
+计算插入的table数组的位置算法：hash/length  hash&(length-1)  hashcode ^ (hashcode >>> 16)&(length-1)
+hashmap的put过程：①.判断键值对数组table[i]是否为空或为null，否则执行resize()进行扩容；
+
+②.根据键值key计算hash值得到插入的数组索引i，如果table[i]==null，直接新建节点添加，转向⑥，如果table[i]不为空，转向③；
+
+③.判断table[i]的首个元素是否和key一样，如果相同直接覆盖value，否则转向④，这里的相同指的是hashCode以及equals；
+
+④.判断table[i] 是否为treeNode，即table[i] 是否是红黑树，如果是红黑树，则直接在树中插入键值对，否则转向⑤；
+
+⑤.遍历table[i]，判断链表长度是否大于8，大于8的话把链表转换为红黑树，在红黑树中执行插入操作，否则进行链表的插入操作；遍历过程中若发现key已经存在直接覆盖value即可；
+
+⑥.插入成功后，判断实际存在的键值对数量size是否超多了最大容量threshold，如果超过，进行扩容。
+
+hashmap resize的过程：设计成2的幂次方的大小可以很快的算出元素新的位置：原位置+原hashmap的大小  避免了重复计算hash（hashcode和hash的区别要注意）
+
+put的时候遇到重复的key会执行覆盖
+
+
+
+3.HashMap是线程安全的吗？为什么不是线程安全的？最好画图说明
+不是线程安全的，在多线程环境下扩容时可能产生循环链表，导致get时遍历产生死循环
+
+
+4.HashMap的扩容过程？
+检查是否达到了最大值达到最大直接修改map的大小为最大
+初始化一个新的entry数组，通过transfer方法将旧数组里面的数据转移到新数组里
+transfer方法重新计算元素在新数组的位置，并且插入链表的顺序是最新插入的在链表的最前面（单链表的头插法）
+
+
+5.HashMap 1.7和1.8有哪些不同？
+1.8在链表长度大于8时转换链表为红黑树，提高了遍历效率
+在计算索引位置时采用高16位和低16位异或是元素更加分散计算效率更高
+扩容时不用重新计算hash而是采用原位置+扩容前数组大小计算新的元素位置，避免了重新计算hash
+
+
+6.final,finally,finalize？
+final作用于声明属性，方法和类分别表示属性不可变，方法不可覆盖，类不可继承
+finally异常处理的最后一部分，总是会执行，finally块的语句在try或catch中的return语句执行之后返回之前执行且finally里的修改语句可能影响也可能不影响try或catch中 return已经确定的返回值，若finally里也有return语句则覆盖try或catch中的return语句直接返回
+finalize是Object类的一个方法，GC时该方法可能会执行，如果执行了，该对象就不会被垃圾回收，但是只会被调用一次，第二次就不能够自我拯救了。不保证一定会执行，因为线程优先级较低，可以用于回收一些资源、关闭连接的但是可能导致内存泄漏（因为不一定保证执行）
+
+
+7.强引用、弱引用、软引用、虚引用
+强引用：最普遍的引用，99%都是，类似于new object(),宁可抛出oom异常也不会GC回收
+软引用：描述不是特别重要的对象，内存实在不够时才会，一般应用于缓存，回收的时间点看该引用距离上次GC后被调用时间的间隔，超过临界值max_interval就会被回收（max_interval和GC后堆空间的大小有关，越大则可以保留的时间越长），软引用主要用户实现类似缓存的功能，在内存足够的情况下直接通过软引用取值，无需从繁忙的真实来源查询数据，提升速度；当内存不足时，自动删除这部分缓存数据，从真正的来源查询这些数据。
+弱引用：不管内存够不够，总是会被回收，弱引用主要用于监控对象是否已经被垃圾回收器标记为即将回收的垃圾，可以通过弱引用的isEnQueued方法返回对象是否被垃圾回收器
+虚引用：虚引用的get方法总是返回null，一般只应用于堆外内存空间的申请，在被GC回收时可以给jvm一个通知，虚引用主要用于检测对象是否已经从内存中删除。
+
+
+8.Java反射？
+动态的加载一些类这些类可能之前用不到所以不用加载到jvm，而是在运行时根据需要才加载，就可以用反射来做
+（1）、获取method，方法的一些重要的参数属性存在class类里面的reflectionData属性里面
+（2）、class的getDeclaredMethod方法中通过privateGetDeclaredMethods方法返回这个类的一些方法列表
+（3）、class的searchMethods通过方法名和参数匹配之前返回的所有方法中符合条件的项，并且返回一个copy副本，也就是说返回的始终是一个新的Method对象
+（4）、方法调用时method.invoke就是调用的Method类中的methodaccessor的invoke方法，methodaccessor本身就是一个接口所有的方法反射都是先走NativeMethodAccessorImpl，默认调了15次之后，才生成一个GeneratedMethodAccessorXXX类，生成好之后就会走这个生成的类的invoke方法了，GeneratedMethodAccessorXXX都是通过new MethodAccessorGenerator().generateMethod来生成的，一旦创建好之后就设置到DelegatingMethodAccessorImpl里去了，DelegatingMethodAccessorImpl是最终注入给Method的methodAccessor的，也就是某个Method的所有的invoke方法都会调用到这个DelegatingMethodAccessorImpl.invoke。
+
+
+9.
+
+
+
+13.wait和sleep的区别？
+wait和notify方法属于object，sleep属于thread，wait会释放对象锁而sleep不会释放对象锁
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

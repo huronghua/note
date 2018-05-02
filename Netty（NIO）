@@ -1,0 +1,23 @@
+Buffer：Long、short、double、int、byte、char、float、map
+1、mark：初始值为-1，用于备份当前的position;
+2、position：初始值为0，position表示当前可以写入或读取数据的位置，当写入或读取一个数据后，position向前移动到下一个位置；
+3、limit：写模式下，limit表示最多能往Buffer里写多少数据，等于capacity值；读模式下，limit表示最多可以读取多少数据（即存储了多少数据，position大小个数据）。
+4、capacity：缓存数组大小
+mark()：把当前position赋值给mark
+reset()：把mark值还原给position
+clear()：一旦读完Buffer中的数据，需要让Buffer准备好再次被写入，clear会恢复状态值，但不会擦除数据，clear后buffer从读模式变成写模式。
+flip()：Buffer有两种模式，写模式和读模式，flip后Buffer从写模式变成读模式。
+rewind()：重置position为0，从头读写数据。
+
+
+Channel：datagram、socket、file、serversocket
+NIO把它支持的I/O对象抽象为Channel，Channel又称“通道”，类似于原I/O中的流（Stream），但有所区别：
+1、流是单向的，通道是双向的，可读可写。
+2、流读写是阻塞的，通道可以异步读写。
+3、流中的数据可以选择性的先读到缓存中，通道的数据总是要先读到一个缓存中，或从缓存中写入
+
+通过上述实现可以看出，基于channel的文件数据读取步骤如下：
+1、申请一块和缓存同大小的DirectByteBuffer bb。
+2、读取数据到缓存bb，底层由NativeDispatcher的read实现。
+3、把bb的数据读取到dst（用户定义的缓存，在jvm中分配内存）。
+read方法导致数据复制了两次。
