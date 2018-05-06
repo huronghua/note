@@ -19,5 +19,5 @@ NIO把它支持的I/O对象抽象为Channel，Channel又称“通道”，类似
 通过上述实现可以看出，基于channel的文件数据读取步骤如下：
 1、申请一块和缓存同大小的DirectByteBuffer bb。
 2、读取数据到缓存bb，底层由NativeDispatcher的read实现。
-3、把bb的数据读取到dst（用户定义的缓存，在jvm中分配内存）。
-read方法导致数据复制了两次。
+3、把bb的数据读取到dst（用户定义的缓存，在jvm中分配内存)。
+read方法导致数据复制了两

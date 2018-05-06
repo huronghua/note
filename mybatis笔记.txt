@@ -101,4 +101,19 @@ index是当前迭代的次数，item的值是本次迭代获取的元素。当�
 
 14.mybatis配置项returnInstanceForEmptyRow返回全部属性为空的实例，map、object都可以。
 
-15.当需要映射的对象包含另一个对象的List时，通过mybatis的collection标签在resultmap中进行配置，并且id标签的column为查询语句的关联主键字段的别名，property为映射对象的属性名。
+15.当需要映射的对象包含另一个对象的List时，通过mybatis的collection标签在resultmap中进行配置，并且id标签的column为查询语句的关联主键字段的别名，property为映射对象的属性名，oftype标签内为一对多的List中的单个元素对象全名。
+
+16.当需要映射的对象包含另一个对象时，通过association标签标记，property标签内是包含的对象的属性名，javaType是包含的对象的对象全名
+
+17.mybatis缓存：
+一级缓存是SqlSession级别的缓存，缓存的数据只在SqlSession内有效
+二级缓存是mapper级别的缓存，同一个namespace公用这一个缓存，所以对SqlSession是共享的
+1.如果SqlSession执行了DML操作（insert、update、delete），并commit了，那么mybatis就会清空当前SqlSession缓存中的所有缓存数据，这样可以保证缓存中的存的数据永远和数据库中一致，避免出现脏读
+2.当一个SqlSession结束后那么他里面的一级缓存也就不存在了，mybatis默认是开启一级缓存，不需要配置
+3.mybatis的缓存是基于[namespace:sql语句:参数]来进行缓存的，意思就是，SqlSession的HashMap存储缓存数据时，是使用[namespace:sql:参数]作为key，查询返回的语句作为value保存的。
+4.二级缓存是mapper级别的缓存，也就是同一个namespace的mappe.xml，当多个SqlSession使用同一个Mapper操作数据库的时候，得到的数据会缓存在同一个二级缓存区域
+要开启二级缓存需要配置setting标签设置cacheenabled属性为true，配置该mapper中的全局二级缓存需要配置cache标签，配置特例排除单条查询需要配置usecache标签
+5.当一个sqlseesion执行了一次select后，在关闭此session的时候，会将查询结果缓存到二级缓存
+6.首先会在他自己的一级缓存中找，如果没找到，就回去二级缓存中找，找到了就返回，就不用去数据库了，从而减少了数据库压力提高了性能　
+
+18._paramter用于动态绑定参数而不管参数是什么类型（适用于只有一个参数的状况），param1、param2则表示动态获取第一个第二个传入参数，取值则对应的用#{0}，#{1}

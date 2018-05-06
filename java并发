@@ -6,7 +6,7 @@ semaphore相当于一个资源池，acquire（）获得许可，release（）释
 
 4.synchronized 在静态方法和普通方法的区别？
 作用于普通方法：锁作用于对象，两个线程同时调用该对象的一个方法，就会产生互斥，必须等一个线程执行完毕释放锁
-作用于静态方法：锁作用于这个类，不会产生互斥
+想·
 对象锁钥匙只能有一把才能互斥，才能保证共享变量的唯一性
 在静态方法上的锁，和 实例方法上的锁，默认不是同样的，如果同步需要制定两把锁一样。
 关于同一个类的方法上的锁，来自于调用该方法的对象，如果调用该方法的对象是相同的，那么锁必然相同，否则就不相同。比如 new A().x() 和 new A().x(),对象不同，锁不同，即不同对象调用相同的方法不会阻塞执行，如果A的单例的，就能互斥。
@@ -24,7 +24,13 @@ volatile关键字修饰，从而一旦有线程修改了v的值来使别的线�
 
 7、synchronized 和 lock 有什么区别？
 a、start()方法，调用该方法开始执行该线程；b、stop()方法，调用该方法强制结束该线程执行；c、join方法，调用该方法等待该线程结束（有阻塞和非阻塞超时版本）。d、sleep()方法，调用该方法该线程进入等待。e、run()方法，调用该方法直接执行线程的run()方法，但是线程调用start()方法时也会运行run()方法，区别就是一个是由线程调度运行run()方法，一个是直接调用了线程中的run()方法
+synchronized：在需要同步的对象中加入此控制，synchronized可以加在方法上，也可以加在特定代码块中，括号中表示需要锁的对象。 
+lock：需要显示指定起始位置和终止位置。一般使用ReentrantLock类做为锁，多个线程中必须要使用一个ReentrantLock类做为对象才能保证锁的生效。且在加锁和解锁处需要通过lock()和unlock()显示指出。所以一般会在finally块中写unlock()以防死锁。
+synchronized悲观 低效  线程只能阻塞来等待锁释放 独占锁
+lock乐观   采用CAS算法 高效 获取失败就尝试重新获取  lock提供响应线程的中断请求（lockinterruptibly）  可以和condition（await、signal方法）配合调用  并且还支持是否设置为公平锁（即是否按照先来后到的顺序）
 
+
+11.AQS算法
 它维护了一个volatile int state（代表共享资源）和一个FIFO线程等待队列（多线程争用资源被阻塞时会进入此队列）
 public abstract class AbstractQueuedSynchronizer
     extends AbstractOwnableSynchronizer

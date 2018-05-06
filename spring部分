@@ -52,7 +52,7 @@ Bean的销毁及内存GC
 
 8、Spring 是如何管理事务的，事务管理机制？
 编程式事务：1.platformTransactionManager手动在代码中编写  transactionDefinition注入transactionStatus，transactionManager调用rollback（transactionStatus）
-			2.transactionTemplate 使用对应的两个callback接口在补获的checkedException异常中抛出runtime异常或者使用transactionStatus设置rollbackonly标志
+2.transactionTemplate 使用对应的两个callback接口在补获的checkedException异常中抛出runtime异常或者使用transactionStatus设置rollbackonly标志
 			
 声明式事务：xml配置、注解配置
 
