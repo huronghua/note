@@ -51,6 +51,43 @@ DNS域名解析 –> 发起TCP的三次握手 –> 建立TCP连接后发起http�
 4、如果一个节点是红色的，那么它的子节点必须是黑色的；
 5、从一个节点到该节点的子孙节点的所有路径包含相同个数的黑色节点；
 
+14.quartz怎么实现分布式、集群？
+每当要进行与某种业务相关的数据库操作时，先去QRTZ_LOCKS表中查询操作相关的业务对象所需要的锁，在select语句之后加for update来实现。例如，TRIGGER_ACCESS表示对任务触发器相关的信息进行修改、删除操作时所需要获得的锁。这时，执行查询这个表数据的SQL形如：
+select * from QRTZ_LOCKS t where t.lock_name='TRIGGER_ACCESS' for update
+当一个线程使用上述的SQL对表中的数据执行查询操作时，若查询结果中包含相关的行，数据库就对该行进行ROW LOCK；
+若此时，另外一个线程使用相同的SQL对表的数据进行查询，由于查询出的数据行已经被数据库锁住了，此时这个线程就只能等待
+直到拥有该行锁的线程完成了相关的业务操作，执行了commit动作后，数据库才会释放了相关行的锁，这个线程才能继续执行。
+通过这样的机制，在集群环境下，结合悲观锁的机制就可以防止一个线程对数据库数据的操作的结果被另外一个线程所覆盖，从而可以避免一些难以觉察的错误发生。
+当然，达到这种效果的前提是需要把Connection设置为手动提交，即autoCommit为false
+
+15.redis缓存失效的实现原理?
+懒汉式删除+定期删除
+懒汉式：key过期的时候不删除，每次通过key获取值的时候去检查是否过期，若过期，则删除，返回null。
+定期删除：隔一段时间（频率）执行一次删除过期key操作，通过限制删除操作的时长和频率，来减少删除操作对CPU时间的占用--处理"定时删除"的缺点（定时器创建浪费资源、同时需要删除的key过多影响cpu执行效率）
+懒汉式删除：
+在进行get或setnx等操作时，先检查key是否过期；
+若过期，删除key，然后执行相应操作；
+若没过期，直接执行相应操作
+定期删除：
+遍历每个数据库（就是redis.conf中配置的"database"数量，默认为16）
+检查当前库中的指定个数个key（默认是每个库检查20个key，注意相当于该循环执行20次，循环体是下边的描述）
+如果当前库中没有一个key设置了过期时间，直接执行下一个库的遍历
+随机获取一个设置了过期时间的key，检查该key是否过期，如果过期，删除key
+判断定期删除操作是否已经达到指定时长，若已经达到，直接退出定期删除。
+对于定期删除，在程序中有一个全局变量current_db来记录下一个将要遍历的库，超过时长的下次遍历将优先从该数据库开始。
+在使用懒汉式删除+定期删除时，控制时长和频率这个尤为关键，需要结合服务器性能，已经并发量等情况进行调整，以致最佳。
+
+
+16.java线程池的实现原理？
+Executors.newFixedThreadPool方法可以生成一个拥有固定线程数的线程池，本质是通过不同的参数初始化一个ThreadPoolExecutor对象，具体参数描述如下
+corePoolSize：线程池中的核心线程数，当提交一个任务时，线程池创建一个新线程执行任务，直到当前线程数等于corePoolSize；如果当前线程数为corePoolSize，继续提交的任务被保存到阻塞队列中，等待被执行
+maximumPoolSize：线程池中允许的最大线程数。如果当前阻塞队列满了，且继续提交任务，则创建新的线程执行任务，前提是当前线程数小于maximumPoolSize
+keepAliveTime：线程空闲时的存活时间，即当线程没有任务执行时，继续存活的时间；默认情况下，该参数只在线程数大于corePoolSize时才有用
+workQueue：用来保存等待被执行的任务的阻塞队列，且任务必须实现Runable接口，分为ArrayBlockingQueue、LinkedBlockingQuene、SynchronousQuene、priorityBlockingQuene
+threadFactory:创建线程的工厂，通过自定义的线程工厂可以给每个新建的线程设置一个具有识别度的线程名。
+handler:线程池的饱和策略，当阻塞队列满了，且没有空闲的工作线程，如果继续提交任务，必须采取一种策略处理该任务,分别为AbortPolicy、CallerRunsPolicy、DiscardOldestPolicy、DiscardPolicy
+Exectors：Exectors工厂类提供了线程池的初始化接口，有四种实现：newFixedThreadPool、newCachedThreadPool、newSingleThreadExecutor、newScheduledThreadPool
+
 
 1.list和set的区别？
 list是有序的set是无需的，list中的元素可以重复，set中的元素不可以重复
