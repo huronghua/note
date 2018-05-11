@@ -77,6 +77,16 @@ select * from QRTZ_LOCKS t where t.lock_name='TRIGGER_ACCESS' for update
 对于定期删除，在程序中有一个全局变量current_db来记录下一个将要遍历的库，超过时长的下次遍历将优先从该数据库开始。
 在使用懒汉式删除+定期删除时，控制时长和频率这个尤为关键，需要结合服务器性能，已经并发量等情况进行调整，以致最佳。
 
+16.object的wait和notify方法是否一定要跟synchronized修饰的代码块内联合使用？
+必须要，wait释放锁之前表示已经获取到了锁，必须在同步块中调用
+
+17.一个不加注解的方法调用一个加了事务注解的方法，事务还会生效么？（不考虑事务传播机制）
+@Transactional 的事务开启 ，或者是基于接口的 或者是基于类的代理被创建。所以在同一个类中一个方法调用另一个方法有事务的方法，事务是不会起作用的。 原因：（这也是为什么在项目中有些@Async并没有异步执行） spring 在扫描bean的时候会扫描方法上是否包含@Transactional注解，如果包含，spring会为这个bean动态地生成一个子类（即代理类，proxy），代理类是继承原来那个bean的。此时，当这个有注解的方法被调用的时候，实际上是由代理类来调用的，代理类在调用之前就会启动transaction。然而，如果这个有注解的方法是被同一个类中的其他方法调用的，那么该方法的调用并没有通过代理类，而是直接通过原来的那个bean，所以就不会启动transaction，我们看到的现象就是@Transactional注解无效。
+
+
+18.求两个list的交集?
+list1.retainAll(list2)
+
 
 16.java线程池的实现原理？
 Executors.newFixedThreadPool方法可以生成一个拥有固定线程数的线程池，本质是通过不同的参数初始化一个ThreadPoolExecutor对象，具体参数描述如下

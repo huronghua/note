@@ -80,8 +80,8 @@ synchronized同步
 并发实战P139
 
 18.ThreadLocal原理，用的时候需要注意什么？
-在线程内部维护了一个自己的类似于hashmap的ThreadLocalMap数据结构，用于保存键值对，但是只能保存一个，并且键就是ThreadLocal自己
-容易发生内存泄漏，因为key为弱引用，如果线程一直运行，GC就没办法回收Entry对象的value，所以在进行get和set之后都要及时进行remove操作
+在线程内部维护了一个自己的类似于hashmap的ThreadLocalMap数据结构，用于保存键值对，但是只能保存一个，并且键就是ThreadLocal自己，相当于在线程内部维护了一份数据副本，线程隔离，因而是线程安全的
+但是容易发生内存泄漏，因为key为弱引用，如果线程一直运行，GC就没办法回收Entry对象的value，所以在进行get和set之后都要及时进行remove操作
 
 19.CountDownLatch 和 CyclicBarrier 的用法，以及相互之间的差别?
 countdownlatch可以用于阻塞线程
